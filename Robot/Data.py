@@ -10,6 +10,9 @@ import time
 
 import Indicators
 
+fast_MA = "5_bar_EMA"
+slow_MA = "13_bar_EMA"
+
 # API Auth
 api = tradeapi.REST(Alpaca_key,Alpaca_secret_key,Alpaca_endpoint)
 
@@ -104,7 +107,7 @@ def get_updated_data(ticker, fast_MA, slow_MA):
 
 def print_signal_update(data, signal, fast_MA, slow_MA):
     current_data = data.iloc[-1]
-    print(f"********Signal: {signal}, Price: {current_data['close']}, Fast Moving Avg: {current_data[fast_MA]}, Slow Moving Avg: {current_data[slow_MA]}, Time: {datetime.now()}********")
+    print(f"********Signal: {signal}, Price: {round(current_data['close'], 10)}, Fast Moving Avg: {round(current_data[fast_MA], 10)}, 8 Bar EMA: {round(current_data['8_bar_EMA'], 10)} Slow Moving Avg: {round(current_data[slow_MA], 10)}, Time: {datetime.now()}********")
 
 def print_trade_update(data, ticker, short, owned, buy_qty, qty, current_signal, slow_MA, fast_MA, order_number):
     slow_MA = data.iloc[-1][slow_MA]
@@ -179,27 +182,4 @@ def print_trade_update(data, ticker, short, owned, buy_qty, qty, current_signal,
         elif (current_signal == "long") and (owned):
             print(f"No trade executed, {ticker} is already owned in your portfolio.")
     else:
-        # Try to buy for 5 minutes
-        print(f"Order for {ticker}, order number #{order_number} has not been filled. Attempting to fill order for 5 minutes before cancelling.")
-        for i in range(5):
-            time.sleep(60)
-            order = api.get_order_by_client_order_id(order_number)
-            if order.status == "filled":
-                trade_time = order.filled_at
-                price = order.filled_avg_price
-                trade_qty = order.filled_qty
-                print(f"""Order Executed:
-    Type: {current_signal}
-    Ticker: {ticker}
-    Price: {price}
-    Qty: {trade_qty}
-    Fast Moving Avg: {fast_MA}
-    Slow Moving Avg: {slow_MA}
-    Filled at: {trade_time}
-    Order Number: {order_number}
-""")
-                break
-        # If order still not filled, cancel order
-        if api.get_order_by_client_order_id(order_number).status != "filled":
-            api.cancel_order(order_number)
-            print(f"Trade for {ticker} has been cancelled. Order #{order_number} failed to fill 5 minutes after submission.")
+        return order.status

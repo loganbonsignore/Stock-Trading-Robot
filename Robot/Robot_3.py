@@ -37,6 +37,14 @@ if (not asset.tradable) or (not asset.shortable):
     else:
         sys.exit(f"Alpaca does not support trading of {ticker}")
 
+# Maximum trades allowed by this script today
+trade_limit = int(input("""
+What is the maximum amount of trades you want to make?
+
+2 = one buy, one sell
+4 = two buys, two sells
+
+Choosing 4 will enable the script to execute a Reverse Trade. :"""))
 
 # Qty of security to buy and sell at each execution
 print(f"Current Buying Power Available: {account.buying_power}")
@@ -70,10 +78,12 @@ Simple Moving Averages:
 ''')
 
 fast_MA = input("Enter selected Fast Moving Average :")
-slow_MA = input("Enter selected Slow Moving Average :")
+slow_MA = input("""Enter selected Slow Moving Average :
+""")
 
 ################################################################################################################################
 ################################################################################################################################
+total_trades = 0
 
 # If in pre-market...
 if (datetime.now() > pre_market_open) and (datetime.now() < market_open):
@@ -82,13 +92,21 @@ if (datetime.now() > pre_market_open) and (datetime.now() < market_open):
         data = Data.get_updated_data(ticker, fast_MA, slow_MA)
         # Get current signal
         current_signal = data.iloc[-1]["signal"]
-        # Check for sell signals if already own stock
-        if (current_signal == "long") or (current_signal == "short"):
-            Indicators.check_for_sell_signal(data, current_signal, ticker)  # Only compatible with Exponential Moving Averages
+        # # Check for sell signals if already own stock -- Exits position if 5_bar_EMA crosses 8_bar_EMA (only works for EMA)
+        # if (current_signal == "long") or (current_signal == "short"):
+            # Indicators.check_for_sell_signal(data, current_signal, ticker)  # Only compatible with Exponential Moving Averages
         # Printing signal update
         Data.print_signal_update(data, current_signal, fast_MA, slow_MA)
         # Executing pre-market trade
-        Trading.execute_trade_pre_market(data, current_signal, ticker, buy_qty, fast_MA, slow_MA)
+        filled_status, num_of_trades = Trading.execute_trade_pre_market(data, current_signal, trade_limit, ticker, buy_qty, fast_MA, slow_MA)
+        # If trade filled, add it to the total count
+        if filled_status == True:
+            total_trades += num_of_trades
+            # Exit positions and stop trading if total trading limit met    
+            ###################################### ONLY EXIT POSITIONS FOR THIS SCRIPT'S TICKER ##########################                            
+            if total_trades == trade_limit:
+                Trading.exit_positions_limit(data)
+                sys.exit(f"Maximum trades executed for the day. If maximum trades met while holding open position(s) additional trade(s) may have been made to close each open position.")
 
         time.sleep(300)
 
@@ -98,17 +116,25 @@ while Portfolio.is_market_open():
     data = Data.get_updated_data(ticker, fast_MA, slow_MA)
     # Getting current signal
     current_signal = data.iloc[-1]["signal"]
-    # Check for sell signals if already own stock
-    if (current_signal == "long") or (current_signal == "short"):
-        Indicators.check_for_sell_signal(data, current_signal, ticker)  # Only compatible with Exponential Moving Averages
+    # # Check for sell signals if already own stock -- Exits position if 5_bar_EMA crosses 8_bar_EMA (only works for EMA)
+    # if (current_signal == "long") or (current_signal == "short"):
+        # Indicators.check_for_sell_signal(data, current_signal, ticker)  # Only compatible with Exponential Moving Averages
     # Printing update
     Data.print_signal_update(data, current_signal, fast_MA, slow_MA)
     # Executing trade
-    Trading.execute_trade(data, current_signal, ticker, buy_qty, fast_MA, slow_MA)
+    filled_status, num_of_trades = Trading.execute_trade(data, current_signal, trade_limit, ticker, buy_qty, fast_MA, slow_MA)
+    # If trade filled, add it to the total count
+    if filled_status == True:
+        total_trades += num_of_trades
+        # Exit positions and stop trading if total trading limit met
+        if total_trades == trade_limit:
+            ###################################### ONLY EXIT POSITIONS FOR THIS SCRIPT'S TICKER ##########################
+            Trading.exit_positions()
+            sys.exit(f"Maximum trades executed for the day. If maximum trades met while holding open position(s) additional trade(s) may have been made to close each open position.")
     # Closing all positions 10 minutes before market close
     if (datetime.now() >= ten_minutes_before_close):
         Trading.exit_positions()
 
     time.sleep(300)
 
-sys.exit("Market Closed")
+sys.exit(f"Market Closed. Total trades executed: {total_trades}")
