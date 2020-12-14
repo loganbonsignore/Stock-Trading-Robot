@@ -74,8 +74,7 @@ Exponential Moving Averages:
 Simple Moving Averages:
     "5_bar_SMA",
     "8_bar_SMA",
-    "13_bar_SMA"
-''')
+    "13_bar_SMA"''')
 
 fast_MA = input("Enter selected Fast Moving Average :")
 slow_MA = input("""Enter selected Slow Moving Average :
