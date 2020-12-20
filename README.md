@@ -1,5 +1,5 @@
-# Alpaca Stock Trading Robot
-All robots are equipt to trade stocks using [Alpaca's stock trading API](https://alpaca.markets/?utm_source=google&utm_medium=cpc&utm_campaign=search_us_automated_trading&utm_content=branded&gclid=Cj0KCQiA5vb-BRCRARIsAJBKc6KKPJZ2-22WBKl-lfLceJCI2hEd_RYMShMP2wO_O3dIuTyqAOwykJQaApgMEALw_wcB).
+# Stock Trading Robot
+These robots are built to trade stocks live using [Alpaca's stock trading API](https://alpaca.markets/?utm_source=google&utm_medium=cpc&utm_campaign=search_us_automated_trading&utm_content=branded&gclid=Cj0KCQiA5vb-BRCRARIsAJBKc6KKPJZ2-22WBKl-lfLceJCI2hEd_RYMShMP2wO_O3dIuTyqAOwykJQaApgMEALw_wcB).
 
 ## Moving Averages Robot
 This robot monitors the market for buy and sell signals generated from the crossover of simple or exponential moving averages.
