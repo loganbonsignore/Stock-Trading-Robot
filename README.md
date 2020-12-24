@@ -5,8 +5,8 @@ These robots are built to trade stocks live using [Alpaca's stock trading API](h
 This robot monitors the market for buy and sell signals generated from the crossover of simple or exponential moving averages.
 
 Upon execution of the code the user is asked to define:
-1) Ticker of which to trade
-2) Buying power or quantity of stock to use in trades
+1) Ticker to trade
+2) Buying power or quantity of securities to use in trades
 3) Type of moving averages to monitor for buy/sell signals
     * 5, 8, 13 bar *exponential* moving average
     * 5, 8, 13 bar *simple* moving average
